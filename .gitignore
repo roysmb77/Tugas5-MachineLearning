@@ -1,0 +1,49 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.db
+*.sqlite3
+
+# === Virtual Environment ===
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# === Jupyter Notebook Cache ===
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# === Model / Data sementara ===
+*.csv
+*.xlsx
+*.ods
+*.sav
+*.h5
+*.json
+*.joblib
+
+# Keep this one!
+!model_risiko_penyakit.pkl
+
+# === System / IDE ===
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.bak
+*.log
+
+# === Build / Deployment ===
+*.egg-info/
+dist/
+build/
+.eggs/
+*.spec
+
+# === Others ===
+__MACOSX/

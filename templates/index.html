@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prediksi Risiko Penyakit Kronis</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <!-- === Halaman Pembuka / Edukasi === -->
+  <div id="welcome-screen" class="fade-in">
+    <div class="welcome-content">
+      <h1>💧 HealthPredict</h1>
+      <h3>Prediksi Risiko Penyakit Berdasarkan Gaya Hidup</h3>
+      <p>
+        Website ini dikembangkan menggunakan dataset kesehatan dari Kaggle yang memuat data usia, kebiasaan hidup, aktivitas, dan kondisi tubuh seseorang.
+        Tujuannya adalah membantu pengguna memahami seberapa besar potensi risiko penyakit yang mungkin dimiliki berdasarkan pola hidup mereka.
+      </p>
+      <button id="start-btn">🚀 Mulai Sekarang</button>
+    </div>
+  </div>
+
+  <!-- === Halaman Prediksi === -->
+  <div class="page" id="main-page" style="display: none;">
+    <header class="hero fade-in">
+      <div class="hero-inner">
+        <h1>🩺 Prediksi Risiko Penyakit Kronis</h1>
+        <p class="subtitle">Masukkan data gaya hidup & kondisi kesehatan Anda untuk melihat tingkat risiko.</p>
+      </div>
+    </header>
+
+    <main class="container fade-in">
+      <form id="prediksiForm" class="card form-card" action="/predict" method="post" autocomplete="off">
+        <div class="grid">
+          <div class="field">
+            <label>Usia (tahun)</label>
+            <input name="usia" type="number" placeholder="Contoh: 45" required>
+          </div>
+
+          <div class="field">
+            <label>Jenis Kelamin</label>
+            <select name="jenis_kelamin" required>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Indeks Massa Tubuh (BMI)</label>
+            <input name="indeks_massa_tubuh" type="number" step="0.1" placeholder="Contoh: 28.3" required>
+          </div>
+
+          <div class="field">
+            <label>Langkah Harian (rata-rata)</label>
+            <input name="langkah_harian" type="number" placeholder="Contoh: 8000" required>
+          </div>
+
+          <div class="field">
+            <label>Jam Tidur (per hari)</label>
+            <input name="jam_tidur" type="number" step="0.1" placeholder="Contoh: 7.5" required>
+          </div>
+
+          <div class="field">
+            <label>Air Minum (liter/hari)</label>
+            <input name="air_minum_per_hari" type="number" step="0.1" placeholder="Contoh: 2.5" required>
+          </div>
+
+          <div class="field">
+            <label>Asupan Kalori Harian (kcal)</label>
+            <input name="asupan_kalori_harian" type="number" placeholder="Contoh: 2500" required>
+          </div>
+
+          <div class="field">
+            <label>Perokok?</label>
+            <select name="perokok" required>
+              <option value="Tidak">Tidak</option>
+              <option value="Ya">Ya</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Konsumsi Alkohol?</label>
+            <select name="alkohol" required>
+              <option value="Tidak">Tidak</option>
+              <option value="Ya">Ya</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Denyut Jantung (bpm)</label>
+            <input name="denyut_jantung" type="number" placeholder="Contoh: 72" required>
+          </div>
+
+          <div class="field">
+            <label>Systolic BP (mmHg)</label>
+            <input name="systolic_bp" type="number" placeholder="Contoh: 130" required>
+          </div>
+
+          <div class="field">
+            <label>Diastolic BP (mmHg)</label>
+            <input name="diastolic_bp" type="number" placeholder="Contoh: 85" required>
+          </div>
+
+          <div class="field">
+            <label>Kolesterol (mg/dL)</label>
+            <input name="kolesterol" type="number" placeholder="Contoh: 210" required>
+          </div>
+
+          <div class="field">
+            <label>Riwayat Penyakit Keluarga?</label>
+            <select name="riwayat_keluarga" required>
+              <option value="Tidak">Tidak</option>
+              <option value="Ya">Ya</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tombol -->
+        <div class="actions">
+          <button class="btn" type="submit">Prediksi Sekarang</button>
+          <button type="button" class="btn-outline" onclick="isiContoh('tinggi')">Contoh Berisiko</button>
+          <button type="button" class="btn-outline" onclick="isiContoh('rendah')">Contoh Tidak Berisiko</button>
+          <button type="button" class="btn-clear" onclick="clearForm()">Clear Hasil</button>
+        </div>
+        <div class="back-home">
+          <button type="button" class="btn-home" onclick="kembaliKeHalamanAwal()">🏠 Kembali ke Halaman Awal</button>
+        </div>
+      </form>
+
+      <!-- Hasil Prediksi -->
+      <section class="card result-card">
+        {% if hasil %}
+          <div class="result-box fade-in">
+            <h2>📊 Hasil Analisis Kesehatan Anda</h2>
+            <p class="result-text {% if 'Berisiko Tinggi' in hasil %}danger{% elif 'Tidak Berisiko' in hasil %}safe{% endif %}">
+              {{ hasil }}
+            </p>
+            <p class="hint">
+              {% if 'Berisiko Tinggi' in hasil %}
+              ⚠️ Disarankan memperbaiki pola makan, meningkatkan aktivitas, dan melakukan pemeriksaan rutin.
+              {% elif 'Tidak Berisiko' in hasil %}
+              🌿 Kondisi Anda tergolong baik. Pertahankan pola makan sehat, olahraga teratur, dan tidur cukup!
+              {% endif %}
+            </p>
+          </div>
+        {% else %}
+          <div class="placeholder fade-in">
+            <h3>Hasil akan tampil di sini</h3>
+            <p>Isi data atau klik tombol contoh untuk mencoba prediksi.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- Footer -->
+      <footer class="note fade-in">
+        <p>💙 “Hasil prediksi ini bersifat indikatif — gunakan sebagai panduan awal. <br>
+        Untuk saran medis yang akurat, konsultasikan dengan dokter atau tenaga kesehatan profesional.”</p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- === SCRIPT === -->
+  <script>
+    // Tombol isi contoh
+    function isiContoh(tipe) {
+      const form = document.getElementById("prediksiForm");
+      const contoh = {
+        tinggi: {
+          usia: 60, jenis_kelamin: "Laki-laki", indeks_massa_tubuh: 32.5,
+          langkah_harian: 3000, jam_tidur: 5, air_minum_per_hari: 1.5,
+          asupan_kalori_harian: 3500, perokok: "Ya", alkohol: "Ya",
+          denyut_jantung: 95, systolic_bp: 150, diastolic_bp: 95,
+          kolesterol: 260, riwayat_keluarga: "Ya"
+        },
+        rendah: {
+          usia: 28, jenis_kelamin: "Perempuan", indeks_massa_tubuh: 22.4,
+          langkah_harian: 9000, jam_tidur: 8, air_minum_per_hari: 3,
+          asupan_kalori_harian: 2100, perokok: "Tidak", alkohol: "Tidak",
+          denyut_jantung: 70, systolic_bp: 120, diastolic_bp: 80,
+          kolesterol: 180, riwayat_keluarga: "Tidak"
+        }
+      };
+      const data = contoh[tipe];
+      for (const [key, value] of Object.entries(data)) {
+        const input = form.querySelector(`[name='${key}']`);
+        if (input) input.value = value;
+      }
+    }
+
+    // Clear hasil prediksi
+    function clearForm() {
+      document.getElementById("prediksiForm").reset();
+      document.querySelector(".result-card").innerHTML = `
+        <div class="placeholder fade-in">
+          <h3>Hasil akan tampil di sini</h3>
+          <p>Isi data atau gunakan contoh untuk mencoba prediksi.</p>
+        </div>`;
+    }
+
+    // Navigasi antar halaman
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const mainPage = document.getElementById("main-page");
+    const startBtn = document.getElementById("start-btn");
+
+    function mulaiPrediksi() {
+      welcomeScreen.style.opacity = 0;
+      setTimeout(() => {
+        welcomeScreen.style.display = "none";
+        mainPage.style.display = "block";
+        mainPage.classList.add("fade-in");
+      }, 600);
+      sessionStorage.setItem("welcomeShown", "true");
+    }
+
+    function kembaliKeHalamanAwal() {
+      mainPage.style.display = "none";
+      welcomeScreen.style.display = "flex";
+      welcomeScreen.style.opacity = 1;
+      sessionStorage.removeItem("welcomeShown");
+    }
+
+    if (startBtn) startBtn.addEventListener("click", mulaiPrediksi);
+
+    // Saat load halaman
+    window.onload = () => {
+      if (sessionStorage.getItem("welcomeShown") === "true") {
+        welcomeScreen.style.display = "none";
+        mainPage.style.display = "block";
+      }
+    };
+  </script>
+</body>
+</html>
